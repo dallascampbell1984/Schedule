@@ -16,17 +16,24 @@
         function drawChart() {
             dataTable = new google.visualization.DataTable();
             dataTable.addColumn({ type: 'string', id: 'Position - Associate' });
+            dataTable.addColumn({ type: 'string', id: 'Role' });
             dataTable.addColumn({ type: 'date', id: 'Start' });
             dataTable.addColumn({ type: 'date', id: 'End' });
 
             shifts.forEach(shift => {
-                var row = [shift.position + ' - ' + shift.associate, shift.start, shift.end];
+                var row = [shift.position + ' - ' + shift.associate, '', shift.start, shift.end];
 
-                // Add lunch breaks
+                // Add lunch break
                 if (shift.lunchStart && shift.lunchEnd) {
-                    var lunchRow = [shift.position + ' Lunch', shift.lunchStart, shift.lunchEnd];
+                    var lunchRow = [shift.position + ' - ' + shift.associate, 'Lunch', shift.lunchStart, shift.lunchEnd];
                     dataTable.addRow(lunchRow);
                 }
+
+                // Add breaks
+                shift.breaks.forEach(breakTime => {
+                    var breakRow = [shift.position + ' - ' + shift.associate, 'Break', breakTime.start, breakTime.end];
+                    dataTable.addRow(breakRow);
+                });
 
                 dataTable.addRow(row);
             });
@@ -77,6 +84,21 @@
                 lunchEnd = new Date(lunchTime.getTime() + lunchDuration / 2);
             }
 
+            // Calculate breaks based on shift duration
+            var breaks = [];
+            var shiftDuration = end.getTime() - start.getTime();
+            if (shiftDuration > 4 * 60 * 60 * 1000) {
+                var breakDuration = 15 * 60 * 1000; // 15 minutes
+
+                var currentTime = new Date(start);
+                while (currentTime.getTime() + breakDuration <= end.getTime()) {
+                    var breakStart = new Date(currentTime);
+                    var breakEnd = new Date(currentTime.getTime() + breakDuration);
+                    breaks.push({ start: breakStart, end: breakEnd });
+                    currentTime = new Date(currentTime.getTime() + breakDuration);
+                }
+            }
+
             // Add shift to the shifts array
             shifts.push({
                 position: position,
@@ -84,7 +106,8 @@
                 start: start,
                 end: end,
                 lunchStart: lunchStart,
-                lunchEnd: lunchEnd
+                lunchEnd: lunchEnd,
+                breaks: breaks
             });
 
             // Update the shifts list
