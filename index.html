@@ -12,6 +12,8 @@
 
         var dataTable;
         var shifts = [];
+        var positions = [];
+        var associates = [];
 
         function drawChart() {
             var container = document.getElementById('chart_div');
@@ -27,8 +29,10 @@
         }
 
         function addShift() {
-            var position = document.getElementById('position').value;
-            var associate = document.getElementById('associate').value;
+            var positionSelect = document.getElementById('position');
+            var associateSelect = document.getElementById('associate');
+            var position = positionSelect.options[positionSelect.selectedIndex].text;
+            var associate = associateSelect.options[associateSelect.selectedIndex].text;
             var start = new Date('1970-01-01T' + document.getElementById('start').value + ':00');
             var end = new Date('1970-01-01T' + document.getElementById('end').value + ':00');
 
@@ -48,12 +52,36 @@
             drawChart();
         }
 
-        function addOption(elementId) {
-            var select = document.getElementById(elementId);
-            var option = document.createElement("option");
-            var newValue = prompt("Enter new value");
-            option.text = newValue;
-            select.add(option);
+        function addNewPosition() {
+            var newPosition = prompt("Enter new position");
+            positions.push(newPosition);
+            updatePositions();
+        }
+
+        function addNewAssociate() {
+            var newAssociate = prompt("Enter new associate");
+            associates.push(newAssociate);
+            updateAssociates();
+        }
+
+        function updatePositions() {
+            var select = document.getElementById('position');
+            select.innerHTML = '';
+            positions.forEach(position => {
+                var option = document.createElement("option");
+                option.text = position;
+                select.add(option);
+            });
+        }
+
+        function updateAssociates() {
+            var select = document.getElementById('associate');
+            select.innerHTML = '';
+            associates.forEach(associate => {
+                var option = document.createElement("option");
+                option.text = associate;
+                select.add(option);
+            });
         }
 
         function deleteShift(index) {
@@ -78,14 +106,22 @@
 <body>
     <div id="chart_div"></div>
     <form onsubmit="event.preventDefault(); addShift();">
-        <label for="position">Position:</label><br>
-        <select id="position" name="position"></select> <button onclick="addOption('position')">+ Add new position</button><br>
-        <label for="associate">Associate:</label><br>
-        <select id="associate" name="associate"></select> <button onclick="addOption('associate')">+ Add new associate</button><br>
-        <label for="start">Start time (24hr format):</label><br>
-        <input type="time" id="start" name="start"><br>
-        <label for="end">End time (24hr format):</label><br>
-        <input type="time" id="end" name="end"><br>
+        <label for="position">Position:</label>
+        <select id="position">
+            <!-- Positions will be dynamically added here -->
+        </select>
+        <button type="button" onclick="addNewPosition()">Add new position</button>
+        <br>
+        <label for="associate">Associate:</label>
+        <select id="associate">
+            <!-- Associates will be dynamically added here -->
+        </select>
+        <button type="button" onclick="addNewAssociate()">Add new associate</button>
+        <br>
+        <label for="start">Start time:</label>
+        <input type="time" id="start" required>
+        <label for="end">End time:</label>
+        <input type="time" id="end" required>
         <input type="submit" value="Add Shift">
     </form>
     <h3>Shifts:</h3>
