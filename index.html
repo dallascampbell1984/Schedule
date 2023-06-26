@@ -13,6 +13,7 @@
         var dataTable;
         var shifts = [];
         var positions = [];
+        var associates = [];
 
         function drawChart() {
             dataTable = new google.visualization.DataTable();
@@ -68,21 +69,14 @@
                 return;
             }
 
-            // Add associate to the shifts array
-            shifts.push({
+            // Add associate to the associates array
+            associates.push({
                 position: position,
-                associate: associate,
-                start: null,
-                end: null,
-                lunchStart: null,
-                lunchEnd: null,
-                breaks: []
+                associate: associate
             });
 
-            // Update the shifts list
-            updateShiftsList();
-
-            drawChart();
+            // Update the associates dropdown menu
+            updateAssociatesDropdown();
         }
 
         function addShift() {
@@ -182,11 +176,11 @@
             }
 
             // Add all associates of the selected position to the dropdown menu
-            for (var i = 0; i < shifts.length; i++) {
-                var shift = shifts[i];
-                if (shift.position === position) {
+            for (var i = 0; i < associates.length; i++) {
+                var associate = associates[i];
+                if (associate.position === position) {
                     var option = document.createElement('option');
-                    option.text = shift.associate;
+                    option.text = associate.associate;
                     associateSelect.add(option);
                 }
             }
