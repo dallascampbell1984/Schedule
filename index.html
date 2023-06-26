@@ -85,7 +85,7 @@
             updateShiftsList();
         }
 
-        function updateShiftsList() {
+function updateShiftsList() {
     var shiftsList = document.getElementById('shifts-list');
 
     // Clear the list
@@ -94,7 +94,7 @@
     }
 
     // Add all shifts from the shifts array
-    for (let i = 0; i < shifts.length; i++) {
+    for (var i = 0; i < shifts.length; i++) {
         var shift = shifts[i];
         var listItem = document.createElement('li');
         listItem.textContent = shift.position + ' - ' + shift.associate + ' - ' +
@@ -103,7 +103,11 @@
 
         var deleteButton = document.createElement('button');
         deleteButton.textContent = 'Delete';
-        deleteButton.onclick = function() { removeShift(i); };
+        deleteButton.onclick = (function(index) {
+            return function() {
+                removeShift(index);
+            };
+        })(i);
         listItem.appendChild(deleteButton);
 
         shiftsList.appendChild(listItem);
