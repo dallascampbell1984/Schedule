@@ -12,27 +12,26 @@
 
         var dataTable;
         var shifts = [];
-        var positions = [];
         var associates = [];
 
         function drawChart() {
             dataTable = new google.visualization.DataTable();
-            dataTable.addColumn({ type: 'string', id: 'Position - Associate' });
+            dataTable.addColumn({ type: 'string', id: 'Associate' });
             dataTable.addColumn({ type: 'date', id: 'Start' });
             dataTable.addColumn({ type: 'date', id: 'End' });
 
             shifts.forEach(shift => {
-                var row = [shift.position + ' - ' + shift.associate, shift.start, shift.end];
+                var row = [shift.associate, shift.start, shift.end];
 
                 // Add lunch break
                 if (shift.lunchStart && shift.lunchEnd) {
-                    var lunchRow = [shift.position + ' - ' + shift.associate, shift.lunchStart, shift.lunchEnd];
+                    var lunchRow = [shift.associate, shift.lunchStart, shift.lunchEnd];
                     dataTable.addRow(lunchRow);
                 }
 
                 // Add breaks
                 shift.breaks.forEach(breakTime => {
-                    var breakRow = [shift.position + ' - ' + shift.associate, breakTime.start, breakTime.end];
+                    var breakRow = [shift.associate, breakTime.start, breakTime.end];
                     dataTable.addRow(breakRow);
                 });
             });
@@ -42,176 +41,29 @@
             chart.draw(dataTable);
         }
 
-        function addNewPosition() {
-            var position = prompt("Enter the new position:");
-            if (position === null) return; // Cancelled by the user
-
-            if (position === "") {
-                alert("Please enter the position.");
-                return;
-            }
-
-            // Add position to the positions array
-            positions.push(position);
-
-            // Update the positions dropdown menu
-            updatePositionsDropdown();
-        }
-
-        function addNewAssociate() {
-            var positionSelect = document.getElementById('position');
-            var position = positionSelect.options[positionSelect.selectedIndex].text;
-            var associate = prompt("Enter the new associate:");
-            if (associate === null) return; // Cancelled by the user
-
-            if (associate === "") {
+        function addAssociate() {
+            var associateName = document.getElementById('associate-name').value;
+            if (associateName === "") {
                 alert("Please enter the associate name.");
                 return;
             }
 
             // Add associate to the associates array
-            associates.push({
-                position: position,
-                associate: associate
-            });
+            associates.push(associateName);
 
             // Update the associates dropdown menu
             updateAssociatesDropdown();
         }
 
-        function addShift() {
-            var positionSelect = document.getElementById('position');
-            var position = positionSelect.options[positionSelect.selectedIndex].text;
-            var associateSelect = document.getElementById('associate');
-            var associate = associateSelect.options[associateSelect.selectedIndex].text;
-            var startTime = document.getElementById('start').value;
-            var endTime = document.getElementById('end').value;
-
-            if (startTime === "" || endTime === "") {
-                alert("Please fill out start time and end time before adding a shift.");
-                return;
-            }
-
-            var start = new Date('1970-01-01T' + startTime + ':00');
-            var end = new Date('1970-01-01T' + endTime + ':00');
-
-            // Calculate lunch start and end times
-            var lunchStart = null;
-            var lunchEnd = null;
-            if (end.getTime() - start.getTime() > 6 * 60 * 60 * 1000) {
-                var lunchDuration = 60 * 60 * 1000; // 1 hour
-                var lunchTime = new Date(start.getTime() + (end.getTime() - start.getTime()) / 2);
-                lunchStart = new Date(lunchTime.getTime() - lunchDuration / 2);
-                lunchEnd = new Date(lunchTime.getTime() + lunchDuration / 2);
-            }
-
-            // Calculate breaks based on shift duration
-            var breaks = [];
-            var shiftDuration = end.getTime() - start.getTime();
-            if (shiftDuration > 4 * 60 * 60 * 1000) {
-                var breakDuration = 15 * 60 * 1000; // 15 minutes
-
-                var currentTime = new Date(start);
-                while (currentTime.getTime() + breakDuration <= end.getTime()) {
-                    var breakStart = new Date(currentTime);
-                    var breakEnd = new Date(currentTime.getTime() + breakDuration);
-                    breaks.push({ start: breakStart, end: breakEnd });
-                    currentTime = new Date(currentTime.getTime() + breakDuration);
-                }
-            }
-
-            // Add shift to the shifts array
-            shifts.push({
-                position: position,
-                associate: associate,
-                start: start,
-                end: end,
-                lunchStart: lunchStart,
-                lunchEnd: lunchEnd,
-                breaks: breaks
-            });
-
-            // Update the shifts list
-            updateShiftsList();
-
-            drawChart();
-        }
-
-        function removeShift(index) {
-            // Remove the shift from the shifts array
-            shifts.splice(index, 1);
-
-            // Redraw the chart
-            drawChart();
-
-            // Update the shifts list
-            updateShiftsList();
-        }
-
-        function updatePositionsDropdown() {
-            var positionSelect = document.getElementById('position');
-
-            // Clear the dropdown menu
-            while (positionSelect.firstChild) {
-                positionSelect.firstChild.remove();
-            }
-
-            // Add all positions to the dropdown menu
-            for (var i = 0; i < positions.length; i++) {
-                var position = positions[i];
-                var option = document.createElement('option');
-                option.text = position;
-                positionSelect.add(option);
-            }
-        }
-
         function updateAssociatesDropdown() {
-            var positionSelect = document.getElementById('position');
-            var position = positionSelect.options[positionSelect.selectedIndex].text;
             var associateSelect = document.getElementById('associate');
+            associateSelect.innerHTML = '';
 
-            // Clear the dropdown menu
-            while (associateSelect.firstChild) {
-                associateSelect.firstChild.remove();
-            }
-
-            // Add all associates of the selected position to the dropdown menu
+            // Add all associates to the dropdown menu
             for (var i = 0; i < associates.length; i++) {
-                var associate = associates[i];
-                if (associate.position === position) {
-                    var option = document.createElement('option');
-                    option.text = associate.associate;
-                    associateSelect.add(option);
-                }
-            }
-        }
-
-        function updateShiftsList() {
-            var shiftsList = document.getElementById('shifts-list');
-
-            // Clear the list
-            while (shiftsList.firstChild) {
-                shiftsList.firstChild.remove();
-            }
-
-            // Add all shifts from the shifts array
-            for (var i = 0; i < shifts.length; i++) {
-                var shift = shifts[i];
-                var listItem = document.createElement('li');
-                listItem.textContent = shift.position + ' - ' + shift.associate + ' - ' +
-                    shift.start.toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'}) + ' - ' +
-                    shift.end.toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'});
-
-                var deleteButton = document.createElement('button');
-                deleteButton.textContent = 'Delete';
-                deleteButton.onclick = (function(index) {
-                    return function() {
-                        removeShift(index);
-                    };
-                })(i);
-                listItem.appendChild(deleteButton);
-
-                shiftsList.appendChild(listItem);
+                var option = document.createElement('option');
+                option.text = associates[i];
+                associateSelect.add(option);
             }
         }
     </script>
@@ -219,29 +71,16 @@
 <body>
     <h1>Associate Schedule</h1>
     <div>
-        <label for="position">Position:</label>
-        <select id="position">
-            <option>Add New...</option>
-        </select>
-        <button onclick="addNewPosition()">Add New Position</button>
-    </div>
-    <div>
         <label for="associate">Associate:</label>
+        <input type="text" id="associate-name">
+    </div>
+    <div>
+        <label for="associate">Select Associate:</label>
         <select id="associate">
-            <option>Add New...</option>
+            <!-- Associates will be dynamically populated here -->
         </select>
-        <button onclick="addNewAssociate()">Add New Associate</button>
     </div>
-    <div>
-        <label for="start">Start:</label>
-        <input type="time" id="start">
-    </div>
-    <div>
-        <label for="end">End:</label>
-        <input type="time" id="end">
-    </div>
-    <button onclick="addShift()">Add Shift</button>
+    <button onclick="addAssociate()">Add Associate</button>
     <div id="chart"></div>
-    <ul id="shifts-list"></ul>
 </body>
 </html>
