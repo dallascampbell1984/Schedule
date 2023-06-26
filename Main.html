@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Work Shift Scheduler</title>
+    <style>
+        /* Add your CSS here */
+    </style>
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+    <script type="text/javascript">
+        google.charts.load('current', {'packages':['timeline']});
+        google.charts.setOnLoadCallback(drawChart);
+
+        var dataTable;
+
+        function drawChart() {
+            var container = document.getElementById('chart_div');
+            var chart = new google.visualization.Timeline(container);
+
+            dataTable = new google.visualization.DataTable();
+            dataTable.addColumn({ type: 'string', id: 'Position' });
+            dataTable.addColumn({ type: 'string', id: 'Associate' });
+            dataTable.addColumn({ type: 'date', id: 'Start' });
+            dataTable.addColumn({ type: 'date', id: 'End' });
+
+            chart.draw(dataTable);
+        }
+
+        function addShift() {
+            var position = document.getElementById('position').value;
+            var associate = document.getElementById('associate').value;
+            var start = new Date('1970-01-01T' + document.getElementById('start').value + ':00');
+            var end = new Date('1970-01-01T' + document.getElementById('end').value + ':00');
+            
+            dataTable.addRow([position, associate, start, end]);
+
+            drawChart();
+        }
+    </script>
+</head>
+<body>
+    <div id="chart_div"></div>
+    <form onsubmit="event.preventDefault(); addShift();">
+      <label for="position">Position:</label><br>
+      <input type="text" id="position" name="position"><br>
+      <label for="associate">Associate:</label><br>
+      <input type="text" id="associate" name="associate"><br>
+      <label for="start">Start time (24hr format):</label><br>
+      <input type="time" id="start" name="start"><br>
+      <label for="end">End time (24hr format):</label><br>
+      <input type="time" id="end" name="end"><br>
+      <input type="submit" value="Add Shift">
+    </form>
+</body>
+</html>
