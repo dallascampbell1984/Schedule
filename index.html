@@ -21,7 +21,21 @@
             dataTable.addColumn({ type: 'date', id: 'End' });
 
             shifts.forEach(shift => {
-                dataTable.addRow([shift.position, shift.associate, shift.start, shift.end]);
+                var row = [shift.position, shift.associate, shift.start, shift.end];
+
+                // Add lunch breaks
+                if (shift.lunchStart && shift.lunchEnd) {
+                    var lunchRow = [shift.position + ' Lunch', shift.associate, shift.lunchStart, shift.lunchEnd];
+                    dataTable.addRow(lunchRow);
+                }
+
+                // Add breaks
+                shift.breaks.forEach(breakTime => {
+                    var breakRow = [shift.position + ' Break', shift.associate, breakTime.start, breakTime.end];
+                    dataTable.addRow(breakRow);
+                });
+
+                dataTable.addRow(row);
             });
 
             var container = document.getElementById('chart');
@@ -53,19 +67,44 @@
             var startTime = document.getElementById('start').value;
             var endTime = document.getElementById('end').value;
 
-            if(startTime === "" || endTime === "") {
+            if (startTime === "" || endTime === "") {
                 alert("Please fill out start time and end time before adding a shift.");
                 return;
             }
             var start = new Date('1970-01-01T' + startTime + ':00');
             var end = new Date('1970-01-01T' + endTime + ':00');
 
+            // Add lunch break
+            var lunchStart = document.getElementById('lunch-start').value;
+            var lunchEnd = document.getElementById('lunch-end').value;
+            var lunchStartTime = lunchStart ? new Date('1970-01-01T' + lunchStart + ':00') : null;
+            var lunchEndTime = lunchEnd ? new Date('1970-01-01T' + lunchEnd + ':00') : null;
+
+            // Add breaks
+            var breaks = [];
+            var breakInputs = document.getElementsByClassName('break-input');
+            for (var i = 0; i < breakInputs.length; i += 2) {
+                var breakStart = breakInputs[i].value;
+                var breakEnd = breakInputs[i + 1].value;
+                if (breakStart && breakEnd) {
+                    var breakStartTime = new Date('1970-01-01T' + breakStart + ':00');
+                    var breakEndTime = new Date('1970-01-01T' + breakEnd + ':00');
+                    breaks.push({
+                        start: breakStartTime,
+                        end: breakEndTime
+                    });
+                }
+            }
+
             // Add shift to the shifts array
             shifts.push({
                 position: position,
                 associate: associate,
                 start: start,
-                end: end
+                end: end,
+                lunchStart: lunchStartTime,
+                lunchEnd: lunchEndTime,
+                breaks: breaks
             });
 
             // Update the shifts list
@@ -85,6 +124,18 @@
             updateShiftsList();
         }
 
+        function addBreak() {
+            var breakContainer = document.getElementById('break-container');
+            var breakStartInput = document.createElement('input');
+            breakStartInput.className = 'break-input';
+            breakStartInput.type = 'time';
+            var breakEndInput = document.createElement('input');
+            breakEndInput.className = 'break-input';
+            breakEndInput.type = 'time';
+            breakContainer.appendChild(breakStartInput);
+            breakContainer.appendChild(breakEndInput);
+        }
+
         function updateShiftsList() {
             var shiftsList = document.getElementById('shifts-list');
 
@@ -98,8 +149,8 @@
                 var shift = shifts[i];
                 var listItem = document.createElement('li');
                 listItem.textContent = shift.position + ' - ' + shift.associate + ' - ' +
-                    shift.start.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) + ' - ' +
-                    shift.end.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+                    shift.start.toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'}) + ' - ' +
+                    shift.end.toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'});
 
                 var deleteButton = document.createElement('button');
                 deleteButton.textContent = 'Delete';
@@ -139,6 +190,20 @@
         <label for="end">End:</label>
         <input type="time" id="end">
     </div>
+    <div>
+        <label for="lunch-start">Lunch Start:</label>
+        <input type="time" id="lunch-start">
+    </div>
+    <div>
+        <label for="lunch-end">Lunch End:</label>
+        <input type="time" id="lunch-end">
+    </div>
+    <div id="break-container">
+        <label for="break">Break:</label>
+        <input type="time" class="break-input">
+        <input type="time" class="break-input">
+    </div>
+    <button onclick="addBreak()">Add Break</button>
     <button onclick="addShift()">Add Shift</button>
     <div id="chart"></div>
     <ul id="shifts-list"></ul>
