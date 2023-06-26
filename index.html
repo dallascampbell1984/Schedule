@@ -12,6 +12,7 @@
 
         var dataTable;
         var shifts = [];
+        var associates = [];
 
         function drawChart() {
             dataTable = new google.visualization.DataTable();
@@ -41,24 +42,32 @@
             chart.draw(dataTable);
         }
 
-        function addNewPosition() {
-            var position = prompt("Enter the new position:");
+        function addNewAssociate() {
+            var positionSelect = document.getElementById('position-associate');
+            var position = positionSelect.options[positionSelect.selectedIndex].text;
             var associate = prompt("Enter the associate name:");
-            var positionSelect = document.getElementById('position');
-            var option = document.createElement('option');
-            option.text = position;
-            positionSelect.add(option);
-            var associateSelect = document.getElementById('associate');
-            var associateOption = document.createElement('option');
-            associateOption.text = associate;
-            associateSelect.add(associateOption);
+
+            if (associate === "") {
+                alert("Please enter the associate name.");
+                return;
+            }
+
+            // Add associate to the associates array
+            associates.push({
+                position: position,
+                associate: associate
+            });
+
+            // Update the associates dropdown menu
+            updateAssociatesDropdown();
+
+            // Clear the input field
+            positionSelect.selectedIndex = 0;
         }
 
         function addShift() {
-            var positionSelect = document.getElementById('position');
-            var associateSelect = document.getElementById('associate');
-            var position = positionSelect.options[positionSelect.selectedIndex].text;
-            var associate = associateSelect.options[associateSelect.selectedIndex].text;
+            var positionAssociateSelect = document.getElementById('position-associate');
+            var positionAssociate = positionAssociateSelect.options[positionAssociateSelect.selectedIndex].text;
             var startTime = document.getElementById('start').value;
             var endTime = document.getElementById('end').value;
 
@@ -97,8 +106,8 @@
 
             // Add shift to the shifts array
             shifts.push({
-                position: position,
-                associate: associate,
+                position: positionAssociate.split(' - ')[0],
+                associate: positionAssociate.split(' - ')[1],
                 start: start,
                 end: end,
                 lunchStart: lunchStart,
@@ -121,6 +130,23 @@
 
             // Update the shifts list
             updateShiftsList();
+        }
+
+        function updateAssociatesDropdown() {
+            var positionAssociateSelect = document.getElementById('position-associate');
+
+            // Clear the dropdown menu
+            while (positionAssociateSelect.firstChild) {
+                positionAssociateSelect.firstChild.remove();
+            }
+
+            // Add all associates to the dropdown menu
+            for (var i = 0; i < associates.length; i++) {
+                var associate = associates[i];
+                var option = document.createElement('option');
+                option.text = associate.position + ' - ' + associate.associate;
+                positionAssociateSelect.add(option);
+            }
         }
 
         function updateShiftsList() {
@@ -156,18 +182,11 @@
 <body>
     <h1>Associate Schedule</h1>
     <div>
-        <label for="position">Position:</label>
-        <select id="position">
+        <label for="position-associate">Position - Associate:</label>
+        <select id="position-associate">
             <option>Add New...</option>
         </select>
-        <button onclick="addNewPosition()">Add New Position</button>
-    </div>
-    <div>
-        <label for="associate">Associate:</label>
-        <select id="associate">
-            <option>Add New...</option>
-        </select>
-        <button onclick="addNewAssociate()">Add New Associate</button>
+        <button onclick="addNewAssociate()">Add Associate</button>
     </div>
     <div>
         <label for="start">Start:</label>
