@@ -10,15 +10,20 @@
         google.charts.load('current', {'packages':['timeline']});
         google.charts.setOnLoadCallback(drawChart);
 
-        var dataTable = new google.visualization.DataTable();
-        dataTable.addColumn({ type: 'string', id: 'Position' });
-        dataTable.addColumn({ type: 'string', id: 'Name' });
-        dataTable.addColumn({ type: 'date', id: 'Start' });
-        dataTable.addColumn({ type: 'date', id: 'End' });
-
+        var dataTable;
         var shifts = [];
 
         function drawChart() {
+            dataTable = new google.visualization.DataTable();
+            dataTable.addColumn({ type: 'string', id: 'Position' });
+            dataTable.addColumn({ type: 'string', id: 'Name' });
+            dataTable.addColumn({ type: 'date', id: 'Start' });
+            dataTable.addColumn({ type: 'date', id: 'End' });
+
+            shifts.forEach(shift => {
+                dataTable.addRow([shift.position, shift.associate, shift.start, shift.end]);
+            });
+
             var container = document.getElementById('chart');
             var chart = new google.visualization.Timeline(container);
             chart.draw(dataTable);
@@ -55,8 +60,6 @@
             var start = new Date('1970-01-01T' + startTime + ':00');
             var end = new Date('1970-01-01T' + endTime + ':00');
 
-            dataTable.addRow([position, associate, start, end]);
-
             // Add shift to the shifts array
             shifts.push({
                 position: position,
@@ -74,9 +77,6 @@
         function removeShift(index) {
             // Remove the shift from the shifts array
             shifts.splice(index, 1);
-
-            // Remove the shift from the dataTable
-            dataTable.removeRow(index);
 
             // Redraw the chart
             drawChart();
@@ -103,4 +103,40 @@
 
                 var deleteButton = document.createElement('button');
                 deleteButton.textContent = 'Delete';
-                deleteButton.onclick = function() {
+                deleteButton.onclick = function() { removeShift(i); };
+                listItem.appendChild(deleteButton);
+
+                shiftsList.appendChild(listItem);
+            }
+        }
+    </script>
+</head>
+<body>
+    <h1>Associate Schedule</h1>
+    <div>
+        <label for="position">Position:</label>
+        <select id="position">
+            <option>Add New...</option>
+        </select>
+        <button onclick="addNewPosition()">Add New Position</button>
+    </div>
+    <div>
+        <label for="associate">Associate:</label>
+        <select id="associate">
+            <option>Add New...</option>
+        </select>
+        <button onclick="addNewAssociate()">Add New Associate</button>
+    </div>
+    <div>
+        <label for="start">Start:</label>
+        <input type="time" id="start">
+    </div>
+    <div>
+        <label for="end">End:</label>
+        <input type="time" id="end">
+    </div>
+    <button onclick="addShift()">Add Shift</button>
+    <div id="chart"></div>
+    <ul id="shifts-list"></ul>
+</body>
+</html>
