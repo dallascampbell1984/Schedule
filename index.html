@@ -35,20 +35,32 @@
 
             drawChart();
         }
+
+        function addOption(elementId) {
+            var select = document.getElementById(elementId);
+            var option = document.createElement("option");
+            var newValue = prompt("Enter new value");
+            option.text = newValue;
+            select.add(option);
+        }
     </script>
 </head>
 <body>
     <div id="chart_div"></div>
     <form onsubmit="event.preventDefault(); addShift();">
-      <label for="position">Position:</label><br>
-      <input type="text" id="position" name="position"><br>
-      <label for="associate">Associate:</label><br>
-      <input type="text" id="associate" name="associate"><br>
-      <label for="start">Start time (24hr format):</label><br>
-      <input type="time" id="start" name="start"><br>
-      <label for="end">End time (24hr format):</label><br>
-      <input type="time" id="end" name="end"><br>
-      <input type="submit" value="Add Shift">
+        <label for="position">Position:</label><br>
+        <select id="position" name="position">
+            <option onclick="addOption('position')">+ Add new position</option>
+        </select><br>
+        <label for="associate">Associate:</label><br>
+        <select id="associate" name="associate">
+            <option onclick="addOption('associate')">+ Add new associate</option>
+        </select><br>
+        <label for="start">Start time (24hr format):</label><br>
+        <input type="time" id="start" name="start"><br>
+        <label for="end">End time (24hr format):</label><br>
+        <input type="time" id="end" name="end"><br>
+        <input type="submit" value="Add Shift">
     </form>
 </body>
 </html>
