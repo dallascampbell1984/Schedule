@@ -12,28 +12,16 @@
 
         var dataTable;
         var shifts = [];
-        var associates = [];
 
         function drawChart() {
             dataTable = new google.visualization.DataTable();
-            dataTable.addColumn({ type: 'string', id: 'Associate' });
+            dataTable.addColumn({ type: 'string', id: 'Position' });
+            dataTable.addColumn({ type: 'string', id: 'Name' });
             dataTable.addColumn({ type: 'date', id: 'Start' });
             dataTable.addColumn({ type: 'date', id: 'End' });
 
             shifts.forEach(shift => {
-                var row = [shift.associate, shift.start, shift.end];
-
-                // Add lunch break
-                if (shift.lunchStart && shift.lunchEnd) {
-                    var lunchRow = [shift.associate, shift.lunchStart, shift.lunchEnd];
-                    dataTable.addRow(lunchRow);
-                }
-
-                // Add breaks
-                shift.breaks.forEach(breakTime => {
-                    var breakRow = [shift.associate, breakTime.start, breakTime.end];
-                    dataTable.addRow(breakRow);
-                });
+                dataTable.addRow([shift.position, shift.associate, shift.start, shift.end]);
             });
 
             var container = document.getElementById('chart');
@@ -41,32 +29,88 @@
             chart.draw(dataTable);
         }
 
-        function addAssociate() {
-            var position = document.getElementById('position').value;
-            var associateName = document.getElementById('associate-name').value;
-            if (position === "" || associateName === "") {
-                alert("Please enter both the position and associate name.");
-                return;
-            }
-
-            var associate = position + " - " + associateName;
-
-            // Add associate to the associates array
-            associates.push(associate);
-
-            // Update the associates dropdown menu
-            updateAssociatesDropdown();
+        function addNewPosition() {
+            var position = prompt("Enter the new position:");
+            var positionSelect = document.getElementById('position');
+            var option = document.createElement('option');
+            option.text = position;
+            positionSelect.add(option);
         }
 
-        function updateAssociatesDropdown() {
+        function addNewAssociate() {
+            var associate = prompt("Enter the new associate:");
             var associateSelect = document.getElementById('associate');
-            associateSelect.innerHTML = '';
+            var option = document.createElement('option');
+            option.text = associate;
+            associateSelect.add(option);
+        }
 
-            // Add all associates to the dropdown menu
-            for (var i = 0; i < associates.length; i++) {
-                var option = document.createElement('option');
-                option.text = associates[i];
-                associateSelect.add(option);
+        function addShift() {
+            var positionSelect = document.getElementById('position');
+            var associateSelect = document.getElementById('associate');
+            var position = positionSelect.options[positionSelect.selectedIndex].text;
+            var associate = associateSelect.options[associateSelect.selectedIndex].text;
+            var startTime = document.getElementById('start').value;
+            var endTime = document.getElementById('end').value;
+
+            if(startTime === "" || endTime === "") {
+                alert("Please fill out start time and end time before adding a shift.");
+                return;
+            }
+            var start = new Date('1970-01-01T' + startTime + ':00');
+            var end = new Date('1970-01-01T' + endTime + ':00');
+
+            // Add shift to the shifts array
+            shifts.push({
+                position: position,
+                associate: associate,
+                start: start,
+                end: end
+            });
+
+            // Update the shifts list
+            updateShiftsList();
+
+            drawChart();
+        }
+
+        function removeShift(index) {
+            // Remove the shift from the shifts array
+            shifts.splice(index, 1);
+
+            // Redraw the chart
+            drawChart();
+
+            // Update the shifts list
+            updateShiftsList();
+        }
+
+        function updateShiftsList() {
+            var shiftsList = document.getElementById('shifts-list');
+
+            // Clear the list
+            while (shiftsList.firstChild) {
+                shiftsList.firstChild.remove();
+            }
+
+            // Add all shifts from the shifts array
+            for (var i = 0; i < shifts.length; i++) {
+                var shift = shifts[i];
+                var listItem = document.createElement('li');
+                listItem.textContent = shift.position + ' - ' + shift.associate + ' - ' +
+                    shift.start.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) + ' - ' +
+                    shift.end.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+
+                var deleteButton = document.createElement('button');
+                deleteButton.textContent = 'Delete';
+                deleteButton.onclick = (function(index) {
+                    return function() {
+                        removeShift(index);
+                    };
+                })(i);
+                listItem.appendChild(deleteButton);
+
+                shiftsList.appendChild(listItem);
             }
         }
     </script>
@@ -75,19 +119,28 @@
     <h1>Associate Schedule</h1>
     <div>
         <label for="position">Position:</label>
-        <input type="text" id="position">
-    </div>
-    <div>
-        <label for="associate-name">Associate Name:</label>
-        <input type="text" id="associate-name">
-    </div>
-    <button onclick="addAssociate()">Add Associate</button>
-    <div>
-        <label for="associate">Select Associate:</label>
-        <select id="associate">
-            <!-- Associates will be dynamically populated here -->
+        <select id="position">
+            <option>Add New...</option>
         </select>
+        <button onclick="addNewPosition()">Add New Position</button>
     </div>
+    <div>
+        <label for="associate">Associate:</label>
+        <select id="associate">
+            <option>Add New...</option>
+        </select>
+        <button onclick="addNewAssociate()">Add New Associate</button>
+    </div>
+    <div>
+        <label for="start">Start:</label>
+        <input type="time" id="start">
+    </div>
+    <div>
+        <label for="end">End:</label>
+        <input type="time" id="end">
+    </div>
+    <button onclick="addShift()">Add Shift</button>
     <div id="chart"></div>
+    <ul id="shifts-list"></ul>
 </body>
 </html>
