@@ -43,7 +43,9 @@
 
         function addNewAssociate() {
             var position = prompt("Enter the position:");
+            if (position === null) return; // Cancelled by the user
             var associate = prompt("Enter the associate name:");
+            if (associate === null) return; // Cancelled by the user
 
             if (position === "" || associate === "") {
                 alert("Please enter both the position and associate name.");
