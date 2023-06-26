@@ -42,12 +42,11 @@
         }
 
         function addNewAssociate() {
-            var positionSelect = document.getElementById('position-associate');
-            var position = positionSelect.options[positionSelect.selectedIndex].text;
+            var position = prompt("Enter the position:");
             var associate = prompt("Enter the associate name:");
 
-            if (associate === "") {
-                alert("Please enter the associate name.");
+            if (position === "" || associate === "") {
+                alert("Please enter both the position and associate name.");
                 return;
             }
 
@@ -59,9 +58,6 @@
 
             // Update the associates dropdown menu
             updateAssociatesDropdown();
-
-            // Clear the input field
-            positionSelect.selectedIndex = 0;
         }
 
         function addShift() {
