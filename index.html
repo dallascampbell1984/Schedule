@@ -12,7 +12,7 @@
 
         var dataTable;
         var shifts = [];
-        var associates = [];
+        var positions = [];
 
         function drawChart() {
             dataTable = new google.visualization.DataTable();
@@ -41,30 +41,55 @@
             chart.draw(dataTable);
         }
 
-        function addNewAssociate() {
-            var position = prompt("Enter the position:");
+        function addNewPosition() {
+            var position = prompt("Enter the new position:");
             if (position === null) return; // Cancelled by the user
-            var associate = prompt("Enter the associate name:");
-            if (associate === null) return; // Cancelled by the user
 
-            if (position === "" || associate === "") {
-                alert("Please enter both the position and associate name.");
+            if (position === "") {
+                alert("Please enter the position.");
                 return;
             }
 
-            // Add associate to the associates array
-            associates.push({
+            // Add position to the positions array
+            positions.push(position);
+
+            // Update the positions dropdown menu
+            updatePositionsDropdown();
+        }
+
+        function addNewAssociate() {
+            var positionSelect = document.getElementById('position');
+            var position = positionSelect.options[positionSelect.selectedIndex].text;
+            var associate = prompt("Enter the new associate:");
+            if (associate === null) return; // Cancelled by the user
+
+            if (associate === "") {
+                alert("Please enter the associate name.");
+                return;
+            }
+
+            // Add associate to the shifts array
+            shifts.push({
                 position: position,
-                associate: associate
+                associate: associate,
+                start: null,
+                end: null,
+                lunchStart: null,
+                lunchEnd: null,
+                breaks: []
             });
 
-            // Update the associates dropdown menu
-            updateAssociatesDropdown();
+            // Update the shifts list
+            updateShiftsList();
+
+            drawChart();
         }
 
         function addShift() {
-            var positionAssociateSelect = document.getElementById('position-associate');
-            var positionAssociate = positionAssociateSelect.options[positionAssociateSelect.selectedIndex].text;
+            var positionSelect = document.getElementById('position');
+            var position = positionSelect.options[positionSelect.selectedIndex].text;
+            var associateSelect = document.getElementById('associate');
+            var associate = associateSelect.options[associateSelect.selectedIndex].text;
             var startTime = document.getElementById('start').value;
             var endTime = document.getElementById('end').value;
 
@@ -103,8 +128,8 @@
 
             // Add shift to the shifts array
             shifts.push({
-                position: positionAssociate.split(' - ')[0],
-                associate: positionAssociate.split(' - ')[1],
+                position: position,
+                associate: associate,
                 start: start,
                 end: end,
                 lunchStart: lunchStart,
@@ -129,20 +154,41 @@
             updateShiftsList();
         }
 
-        function updateAssociatesDropdown() {
-            var positionAssociateSelect = document.getElementById('position-associate');
+        function updatePositionsDropdown() {
+            var positionSelect = document.getElementById('position');
 
             // Clear the dropdown menu
-            while (positionAssociateSelect.firstChild) {
-                positionAssociateSelect.firstChild.remove();
+            while (positionSelect.firstChild) {
+                positionSelect.firstChild.remove();
             }
 
-            // Add all associates to the dropdown menu
-            for (var i = 0; i < associates.length; i++) {
-                var associate = associates[i];
+            // Add all positions to the dropdown menu
+            for (var i = 0; i < positions.length; i++) {
+                var position = positions[i];
                 var option = document.createElement('option');
-                option.text = associate.position + ' - ' + associate.associate;
-                positionAssociateSelect.add(option);
+                option.text = position;
+                positionSelect.add(option);
+            }
+        }
+
+        function updateAssociatesDropdown() {
+            var positionSelect = document.getElementById('position');
+            var position = positionSelect.options[positionSelect.selectedIndex].text;
+            var associateSelect = document.getElementById('associate');
+
+            // Clear the dropdown menu
+            while (associateSelect.firstChild) {
+                associateSelect.firstChild.remove();
+            }
+
+            // Add all associates of the selected position to the dropdown menu
+            for (var i = 0; i < shifts.length; i++) {
+                var shift = shifts[i];
+                if (shift.position === position) {
+                    var option = document.createElement('option');
+                    option.text = shift.associate;
+                    associateSelect.add(option);
+                }
             }
         }
 
@@ -179,11 +225,18 @@
 <body>
     <h1>Associate Schedule</h1>
     <div>
-        <label for="position-associate">Position - Associate:</label>
-        <select id="position-associate">
+        <label for="position">Position:</label>
+        <select id="position">
             <option>Add New...</option>
         </select>
-        <button onclick="addNewAssociate()">Add Associate</button>
+        <button onclick="addNewPosition()">Add New Position</button>
+    </div>
+    <div>
+        <label for="associate">Associate:</label>
+        <select id="associate">
+            <option>Add New...</option>
+        </select>
+        <button onclick="addNewAssociate()">Add New Associate</button>
     </div>
     <div>
         <label for="start">Start:</label>
