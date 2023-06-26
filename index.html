@@ -42,14 +42,17 @@
         }
 
         function addAssociate() {
+            var position = document.getElementById('position').value;
             var associateName = document.getElementById('associate-name').value;
-            if (associateName === "") {
-                alert("Please enter the associate name.");
+            if (position === "" || associateName === "") {
+                alert("Please enter both the position and associate name.");
                 return;
             }
 
+            var associate = position + " - " + associateName;
+
             // Add associate to the associates array
-            associates.push(associateName);
+            associates.push(associate);
 
             // Update the associates dropdown menu
             updateAssociatesDropdown();
@@ -71,16 +74,20 @@
 <body>
     <h1>Associate Schedule</h1>
     <div>
-        <label for="associate">Associate:</label>
+        <label for="position">Position:</label>
+        <input type="text" id="position">
+    </div>
+    <div>
+        <label for="associate-name">Associate Name:</label>
         <input type="text" id="associate-name">
     </div>
+    <button onclick="addAssociate()">Add Associate</button>
     <div>
         <label for="associate">Select Associate:</label>
         <select id="associate">
             <!-- Associates will be dynamically populated here -->
         </select>
     </div>
-    <button onclick="addAssociate()">Add Associate</button>
     <div id="chart"></div>
 </body>
 </html>
