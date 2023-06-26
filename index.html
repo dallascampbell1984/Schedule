@@ -79,13 +79,9 @@
     <div id="chart_div"></div>
     <form onsubmit="event.preventDefault(); addShift();">
         <label for="position">Position:</label><br>
-        <select id="position" name="position">
-            <option onclick="addOption('position')">+ Add new position</option>
-        </select><br>
+        <select id="position" name="position"></select> <button onclick="addOption('position')">+ Add new position</button><br>
         <label for="associate">Associate:</label><br>
-        <select id="associate" name="associate">
-            <option onclick="addOption('associate')">+ Add new associate</option>
-        </select><br>
+        <select id="associate" name="associate"></select> <button onclick="addOption('associate')">+ Add new associate</button><br>
         <label for="start">Start time (24hr format):</label><br>
         <input type="time" id="start" name="start"><br>
         <label for="end">End time (24hr format):</label><br>
