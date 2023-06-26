@@ -85,35 +85,34 @@
             updateShiftsList();
         }
 
-function updateShiftsList() {
-    var shiftsList = document.getElementById('shifts-list');
+        function updateShiftsList() {
+            var shiftsList = document.getElementById('shifts-list');
 
-    // Clear the list
-    while (shiftsList.firstChild) {
-        shiftsList.firstChild.remove();
-    }
+            // Clear the list
+            while (shiftsList.firstChild) {
+                shiftsList.firstChild.remove();
+            }
 
-    // Add all shifts from the shifts array
-    for (var i = 0; i < shifts.length; i++) {
-        var shift = shifts[i];
-        var listItem = document.createElement('li');
-        listItem.textContent = shift.position + ' - ' + shift.associate + ' - ' +
-            shift.start.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) + ' - ' +
-            shift.end.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+            // Add all shifts from the shifts array
+            for (var i = 0; i < shifts.length; i++) {
+                var shift = shifts[i];
+                var listItem = document.createElement('li');
+                listItem.textContent = shift.position + ' - ' + shift.associate + ' - ' +
+                    shift.start.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) + ' - ' +
+                    shift.end.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
 
-        var deleteButton = document.createElement('button');
-        deleteButton.textContent = 'Delete';
-        deleteButton.onclick = (function(index) {
-            return function() {
-                removeShift(index);
-            };
-        })(i);
-        listItem.appendChild(deleteButton);
+                var deleteButton = document.createElement('button');
+                deleteButton.textContent = 'Delete';
+                deleteButton.onclick = (function(index) {
+                    return function() {
+                        removeShift(index);
+                    };
+                })(i);
+                listItem.appendChild(deleteButton);
 
-        shiftsList.appendChild(listItem);
-    }
-}
-
+                shiftsList.appendChild(listItem);
+            }
+        }
     </script>
 </head>
 <body>
