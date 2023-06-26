@@ -17,22 +17,21 @@
         function drawChart() {
             dataTable = new google.visualization.DataTable();
             dataTable.addColumn({ type: 'string', id: 'Position - Associate' });
-            dataTable.addColumn({ type: 'string', id: 'Role' });
             dataTable.addColumn({ type: 'date', id: 'Start' });
             dataTable.addColumn({ type: 'date', id: 'End' });
 
             shifts.forEach(shift => {
-                var row = [shift.position + ' - ' + shift.associate, '', shift.start, shift.end];
+                var row = [shift.position + ' - ' + shift.associate, shift.start, shift.end];
 
                 // Add lunch break
                 if (shift.lunchStart && shift.lunchEnd) {
-                    var lunchRow = [shift.position + ' - ' + shift.associate, 'Lunch', shift.lunchStart, shift.lunchEnd];
+                    var lunchRow = [shift.position + ' - ' + shift.associate, shift.lunchStart, shift.lunchEnd];
                     dataTable.addRow(lunchRow);
                 }
 
                 // Add breaks
                 shift.breaks.forEach(breakTime => {
-                    var breakRow = [shift.position + ' - ' + shift.associate, 'Break', breakTime.start, breakTime.end];
+                    var breakRow = [shift.position + ' - ' + shift.associate, breakTime.start, breakTime.end];
                     dataTable.addRow(breakRow);
                 });
             });
