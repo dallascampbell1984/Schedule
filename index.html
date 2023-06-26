@@ -103,28 +103,4 @@
 
                 var deleteButton = document.createElement('button');
                 deleteButton.textContent = 'Delete';
-                deleteButton.onclick = function() { removeShift(i); };
-
-                listItem.appendChild(deleteButton);
-                shiftsList.appendChild(listItem);
-            }
-        }
-    </script>
-</head>
-<body>
-    <button onclick="addNewPosition()">Add New Position</button>
-    <button onclick="addNewAssociate()">Add New Associate</button>
-    <select id="position">
-        <option>Add New Position</option>
-    </select>
-    <select id="associate">
-        <option>Add New Associate</option>
-    </select>
-    <input type="time" id="start">
-    <input type="time" id="end">
-    <button onclick="addShift()">Add Shift</button>
-    <ul id="shifts-list">
-    </ul>
-    <div id="chart"></div>
-</body>
-</html>
+                deleteButton.onclick = function() {
