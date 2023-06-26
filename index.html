@@ -43,18 +43,15 @@
 
         function addNewPosition() {
             var position = prompt("Enter the new position:");
+            var associate = prompt("Enter the associate name:");
             var positionSelect = document.getElementById('position');
             var option = document.createElement('option');
             option.text = position;
             positionSelect.add(option);
-        }
-
-        function addNewAssociate() {
-            var associate = prompt("Enter the new associate:");
             var associateSelect = document.getElementById('associate');
-            var option = document.createElement('option');
-            option.text = associate;
-            associateSelect.add(option);
+            var associateOption = document.createElement('option');
+            associateOption.text = associate;
+            associateSelect.add(associateOption);
         }
 
         function addShift() {
@@ -159,7 +156,7 @@
 <body>
     <h1>Associate Schedule</h1>
     <div>
-        <label for="position">Position - Associate:</label>
+        <label for="position">Position:</label>
         <select id="position">
             <option>Add New...</option>
         </select>
