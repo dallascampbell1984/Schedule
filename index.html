@@ -15,23 +15,22 @@
 
         function drawChart() {
             dataTable = new google.visualization.DataTable();
-            dataTable.addColumn({ type: 'string', id: 'Position' });
-            dataTable.addColumn({ type: 'string', id: 'Name' });
+            dataTable.addColumn({ type: 'string', id: 'Position - Associate' });
             dataTable.addColumn({ type: 'date', id: 'Start' });
             dataTable.addColumn({ type: 'date', id: 'End' });
 
             shifts.forEach(shift => {
-                var row = [shift.position, shift.associate, shift.start, shift.end];
+                var row = [shift.position + ' - ' + shift.associate, shift.start, shift.end];
 
                 // Add lunch breaks
                 if (shift.lunchStart && shift.lunchEnd) {
-                    var lunchRow = [shift.position + ' Lunch', shift.associate, shift.lunchStart, shift.lunchEnd];
+                    var lunchRow = [shift.position + ' Lunch', shift.lunchStart, shift.lunchEnd];
                     dataTable.addRow(lunchRow);
                 }
 
                 // Add breaks
                 shift.breaks.forEach(breakTime => {
-                    var breakRow = [shift.position + ' Break', shift.associate, breakTime.start, breakTime.end];
+                    var breakRow = [shift.position + ' Break', breakTime.start, breakTime.end];
                     dataTable.addRow(breakRow);
                 });
 
@@ -74,25 +73,29 @@
             var start = new Date('1970-01-01T' + startTime + ':00');
             var end = new Date('1970-01-01T' + endTime + ':00');
 
-            // Add lunch break
-            var lunchStart = document.getElementById('lunch-start').value;
-            var lunchEnd = document.getElementById('lunch-end').value;
-            var lunchStartTime = lunchStart ? new Date('1970-01-01T' + lunchStart + ':00') : null;
-            var lunchEndTime = lunchEnd ? new Date('1970-01-01T' + lunchEnd + ':00') : null;
+            // Calculate lunch start and end times
+            var lunchStart = null;
+            var lunchEnd = null;
+            if (end.getTime() - start.getTime() > 6 * 60 * 60 * 1000) {
+                var lunchDuration = 60 * 60 * 1000; // 1 hour
+                var lunchTime = new Date(start.getTime() + (end.getTime() - start.getTime()) / 2);
+                lunchStart = new Date(lunchTime.getTime() - lunchDuration / 2);
+                lunchEnd = new Date(lunchTime.getTime() + lunchDuration / 2);
+            }
 
-            // Add breaks
+            // Calculate breaks based on shift duration
             var breaks = [];
-            var breakInputs = document.getElementsByClassName('break-input');
-            for (var i = 0; i < breakInputs.length; i += 2) {
-                var breakStart = breakInputs[i].value;
-                var breakEnd = breakInputs[i + 1].value;
-                if (breakStart && breakEnd) {
-                    var breakStartTime = new Date('1970-01-01T' + breakStart + ':00');
-                    var breakEndTime = new Date('1970-01-01T' + breakEnd + ':00');
-                    breaks.push({
-                        start: breakStartTime,
-                        end: breakEndTime
-                    });
+            var shiftDuration = end.getTime() - start.getTime();
+            if (shiftDuration > 4 * 60 * 60 * 1000) {
+                var breakDuration = 15 * 60 * 1000; // 15 minutes
+
+                // Add breaks based on available time slots
+                var currentTime = new Date(start);
+                while (currentTime.getTime() + breakDuration <= end.getTime()) {
+                    var breakStart = new Date(currentTime);
+                    var breakEnd = new Date(currentTime.getTime() + breakDuration);
+                    breaks.push({ start: breakStart, end: breakEnd });
+                    currentTime = new Date(currentTime.getTime() + breakDuration);
                 }
             }
 
@@ -102,8 +105,8 @@
                 associate: associate,
                 start: start,
                 end: end,
-                lunchStart: lunchStartTime,
-                lunchEnd: lunchEndTime,
+                lunchStart: lunchStart,
+                lunchEnd: lunchEnd,
                 breaks: breaks
             });
 
@@ -169,7 +172,7 @@
 <body>
     <h1>Associate Schedule</h1>
     <div>
-        <label for="position">Position:</label>
+        <label for="position">Position - Associate:</label>
         <select id="position">
             <option>Add New...</option>
         </select>
@@ -189,14 +192,6 @@
     <div>
         <label for="end">End:</label>
         <input type="time" id="end">
-    </div>
-    <div>
-        <label for="lunch-start">Lunch Start:</label>
-        <input type="time" id="lunch-start">
-    </div>
-    <div>
-        <label for="lunch-end">Lunch End:</label>
-        <input type="time" id="lunch-end">
     </div>
     <div id="break-container">
         <label for="break">Break:</label>
