@@ -7,7 +7,7 @@
     </style>
 
     <!-- Load vis-timeline styles -->
-    <link href="https://unpkg.com/vis-timeline/styles/vis-timeline-graph2d.css" rel="stylesheet" type="text/css" />
+    <link href="https://unpkg.com/vis-timeline/styles/vis-timeline-graph2d.min.css" rel="stylesheet" type="text/css" />
 
     <!-- Load vis-timeline library -->
     <script src="https://unpkg.com/vis-timeline/standalone/umd/vis-timeline-graph2d.min.js"></script>
@@ -39,8 +39,22 @@
         var shifts = [];
 
         // Initialize timeline
-        var container = document.getElementById('timeline');
-        var items = new vis.DataSet();
+var container = document.getElementById('timeline');
+var items = new vis.DataSet();
+var options = {
+    editable: {
+        updateTime: true, // Allow moving items
+        remove: true, // Allow items to be deleted
+    },
+    onMove: function (item, callback) {
+        // Save the new item positions
+        // The properties object contains the ids of the moved items and their old and new dates
+        console.log(item);
+        callback(item);
+    },
+};
+var timeline = new vis.Timeline(container, items, options);
+
     </script>
 
     <script type="text/javascript">
