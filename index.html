@@ -12,16 +12,28 @@
 
         var dataTable;
         var shifts = [];
+        var associates = [];
 
         function drawChart() {
             dataTable = new google.visualization.DataTable();
-            dataTable.addColumn({ type: 'string', id: 'Position' });
-            dataTable.addColumn({ type: 'string', id: 'Name' });
+            dataTable.addColumn({ type: 'string', id: 'Associate' });
             dataTable.addColumn({ type: 'date', id: 'Start' });
             dataTable.addColumn({ type: 'date', id: 'End' });
 
             shifts.forEach(shift => {
-                dataTable.addRow([shift.position, shift.associate, shift.start, shift.end]);
+                var row = [shift.associate, shift.start, shift.end];
+
+                // Add lunch break
+                if (shift.lunchStart && shift.lunchEnd) {
+                    var lunchRow = [shift.associate, shift.lunchStart, shift.lunchEnd];
+                    dataTable.addRow(lunchRow);
+                }
+
+                // Add breaks
+                shift.breaks.forEach(breakTime => {
+                    var breakRow = [shift.associate, breakTime.start, breakTime.end];
+                    dataTable.addRow(breakRow);
+                });
             });
 
             var container = document.getElementById('chart');
@@ -29,89 +41,61 @@
             chart.draw(dataTable);
         }
 
-        function addNewPosition() {
-            var position = prompt("Enter the new position:");
-            var positionSelect = document.getElementById('position');
-            var option = document.createElement('option');
-            option.text = position;
-            positionSelect.add(option);
-        }
-
-        function addNewAssociate() {
-            var associate = prompt("Enter the new associate:");
-            var associateSelect = document.getElementById('associate');
-            var option = document.createElement('option');
-            option.text = associate;
-            associateSelect.add(option);
-        }
-
-        function addShift() {
-            var positionSelect = document.getElementById('position');
-            var associateSelect = document.getElementById('associate');
-            var position = positionSelect.options[positionSelect.selectedIndex].text;
-            var associate = associateSelect.options[associateSelect.selectedIndex].text;
-            var startTime = document.getElementById('start').value;
-            var endTime = document.getElementById('end').value;
-
-            if(startTime === "" || endTime === "") {
-                alert("Please fill out start time and end time before adding a shift.");
+        function addAssociate() {
+            var position = document.getElementById('position').value;
+            var associateName = document.getElementById('associate-name').value;
+            if (position === "" || associateName === "") {
+                alert("Please enter both the position and associate name.");
                 return;
             }
-            var start = new Date('1970-01-01T' + startTime + ':00');
-            var end = new Date('1970-01-01T' + endTime + ':00');
 
-            // Add shift to the shifts array
-            shifts.push({
-                position: position,
-                associate: associate,
-                start: start,
-                end: end
-            });
+            var associate = position + " - " + associateName;
 
-            // Update the shifts list
-            updateShiftsList();
+            // Add associate to the associates array
+            associates.push(associate);
 
-            drawChart();
+            // Update the associates dropdown menu
+            updateAssociatesDropdown();
         }
 
-        function removeShift(index) {
-            // Remove the shift from the shifts array
-            shifts.splice(index, 1);
+        function updateAssociatesDropdown() {
+            var associateSelect = document.getElementById('associate');
+            associateSelect.innerHTML = '';
 
-            // Redraw the chart
-            drawChart();
-
-            // Update the shifts list
-            updateShiftsList();
+            // Add all associates to the dropdown menu
+            for (var i = 0; i < associates.length; i++) {
+                var option = document.createElement('option');
+                option.text = associates[i];
+                associateSelect.add(option);
+            }
         }
 
-        function updateShiftsList() {
-            var shiftsList = document.getElementById('shifts-list');
+        function downloadAssociatesData() {
+            // Convert associates array to JSON
+            var dataStr = JSON.stringify(associates);
+            var dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
 
-            // Clear the list
-            while (shiftsList.firstChild) {
-                shiftsList.firstChild.remove();
-            }
+            // Create a download link and click it
+            var exportFileDefaultName = 'associates_data.json';
+            var linkElement = document.createElement('a');
+            linkElement.setAttribute('href', dataUri);
+            linkElement.setAttribute('download', exportFileDefaultName);
+            linkElement.click();
+        }
 
-            // Add all shifts from the shifts array
-            for (var i = 0; i < shifts.length; i++) {
-                var shift = shifts[i];
-                var listItem = document.createElement('li');
-                listItem.textContent = shift.position + ' - ' + shift.associate + ' - ' +
-                    shift.start.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) + ' - ' +
-                    shift.end.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+        function uploadAssociatesData(event) {
+            // Read the file using FileReader
+            var file = event.target.files[0];
+            var reader = new FileReader();
+            reader.onload = function(event) {
+                // Parse the JSON data
+                var data = JSON.parse(event.target.result);
 
-                var deleteButton = document.createElement('button');
-                deleteButton.textContent = 'Delete';
-                deleteButton.onclick = (function(index) {
-                    return function() {
-                        removeShift(index);
-                    };
-                })(i);
-                listItem.appendChild(deleteButton);
-
-                shiftsList.appendChild(listItem);
-            }
+                // Update the associates array and dropdown menu
+                associates = data;
+                updateAssociatesDropdown();
+            };
+            reader.readAsText(file);
         }
     </script>
 </head>
@@ -119,28 +103,23 @@
     <h1>Associate Schedule</h1>
     <div>
         <label for="position">Position:</label>
-        <select id="position">
-            <option>Add New...</option>
-        </select>
-        <button onclick="addNewPosition()">Add New Position</button>
+        <input type="text" id="position">
     </div>
     <div>
-        <label for="associate">Associate:</label>
+        <label for="associate-name">Associate Name:</label>
+        <input type="text" id="associate-name">
+    </div>
+    <button onclick="addAssociate()">Add Associate</button>
+    <div>
+        <label for="associate">Select Associate:</label>
         <select id="associate">
-            <option>Add New...</option>
+            <!-- Associates will be dynamically populated here -->
         </select>
-        <button onclick="addNewAssociate()">Add New Associate</button>
     </div>
     <div>
-        <label for="start">Start:</label>
-        <input type="time" id="start">
+        <button onclick="downloadAssociatesData()">Download Data</button>
+        <input type="file" id="upload" onchange="uploadAssociatesData(event)">
     </div>
-    <div>
-        <label for="end">End:</label>
-        <input type="time" id="end">
-    </div>
-    <button onclick="addShift()">Add Shift</button>
     <div id="chart"></div>
-    <ul id="shifts-list"></ul>
 </body>
 </html>
