@@ -7,10 +7,10 @@
     </style>
 
     <!-- Load vis-timeline styles -->
-    <link href="https://unpkg.com/vis-timeline/styles/vis-timeline-graph2d.min.css" rel="stylesheet" type="text/css" />
+    <link href="https://unpkg.com/vis-timeline@next/standalone/umd/vis-timeline-graph2d.min.css" rel="stylesheet" type="text/css" />
 
     <!-- Load vis-timeline library -->
-    <script src="https://unpkg.com/vis-timeline/standalone/umd/vis-timeline-graph2d.min.js"></script>
+    <script src="https://unpkg.com/vis-timeline@next/standalone/umd/vis-timeline-graph2d.min.js"></script>
 </head>
 
 <body>
@@ -39,9 +39,9 @@
         var shifts = [];
 
         // Initialize timeline
-var container = document.getElementById('timeline');
-var items = new vis.DataSet();
-var options = {
+    var container = document.getElementById('timeline');
+    var items = new vis.DataSet();
+    var timeline = new vis.Timeline(container, items);
     editable: {
         updateTime: true, // Allow moving items
         remove: true, // Allow items to be deleted
@@ -59,32 +59,30 @@ var timeline = new vis.Timeline(container, items, options);
 
     <script type="text/javascript">
         var options = {
-            manipulation: {
-                enabled: true
-            },
-            editable: {
-                updateTime: true, // Allow moving items
-                updateGroup: false, // Do not allow moving items from one group to another
-                remove: true, // Allow items to be deleted
-            },
-            onMoving: function (item, callback) {
-                // Prevent items from being moved to overlap other items or outside the shift time
-                var otherItems = items.get({filter: i => i.id !== item.id});
-                var shift = shifts.find(s => s.id === item.id || item.id.startsWith(`${s.id}-`));
-                item.start = Math.max(item.start, shift.start);
-                item.end = Math.min(item.end, shift.end);
-                otherItems.forEach(i => {
-                    if (item.start < i.end && item.end > i.start) {
-                        if (Math.abs(item.start - i.end) < Math.abs(item.end - i.start)) {
-                            item.start = i.end;
-                        } else {
-                            item.end = i.start;
-                        }
+        editable: {
+            updateTime: true, // Allow moving items
+            updateGroup: true, // Allow moving items from one group to another
+            remove: true, // Allow items to be deleted
+        },
+        onMove: function (item, callback) {
+            // Prevent items from being moved to overlap other items or outside the shift time
+            var otherItems = items.get({filter: i => i.id !== item.id});
+            var shift = shifts.find(s => s.id === item.id || item.id.startsWith(`${s.id}-`));
+            item.start = Math.max(item.start, shift.start);
+            item.end = Math.min(item.end, shift.end);
+            otherItems.forEach(i => {
+                if (item.start < i.end && item.end > i.start) {
+                    if (Math.abs(item.start - i.end) < Math.abs(item.end - i.start)) {
+                        item.start = i.end;
+                    } else {
+                        item.end = i.start;
                     }
-                });
-                callback(item);
-            },
-        };
+                }
+            });
+            callback(item);
+        },
+    };
+    timeline.setOptions(options);
     </script>
 
     <script type="text/javascript">
@@ -93,10 +91,10 @@ var timeline = new vis.Timeline(container, items, options);
 
     <script type="text/javascript">
         timeline.on('move', function (properties) {
-            // Save the new item positions
-            // The properties object contains the ids of the moved items and their old and new dates
-            console.log(properties);
-        });
+        // Save the new item positions
+        // The properties object contains the ids of the moved items and their old and new dates
+        console.log(properties);
+    });
     </script>
 
     <script type="text/javascript">
