@@ -1,125 +1,126 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Associate Schedule</title>
-    <style>
-        /* Add your CSS here */
-    </style>
-    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
-    <script type="text/javascript">
-        google.charts.load('current', {'packages':['timeline']});
-        google.charts.setOnLoadCallback(drawChart);
-
-        var dataTable;
-        var shifts = [];
-        var associates = [];
-
-        function drawChart() {
-            dataTable = new google.visualization.DataTable();
-            dataTable.addColumn({ type: 'string', id: 'Associate' });
-            dataTable.addColumn({ type: 'date', id: 'Start' });
-            dataTable.addColumn({ type: 'date', id: 'End' });
-
-            shifts.forEach(shift => {
-                var row = [shift.associate, shift.start, shift.end];
-
-                // Add lunch break
-                if (shift.lunchStart && shift.lunchEnd) {
-                    var lunchRow = [shift.associate, shift.lunchStart, shift.lunchEnd];
-                    dataTable.addRow(lunchRow);
-                }
-
-                // Add breaks
-                shift.breaks.forEach(breakTime => {
-                    var breakRow = [shift.associate, breakTime.start, breakTime.end];
-                    dataTable.addRow(breakRow);
-                });
-            });
-
-            var container = document.getElementById('chart');
-            var chart = new google.visualization.Timeline(container);
-            chart.draw(dataTable);
-        }
-
-        function addAssociate() {
-            var position = document.getElementById('position').value;
-            var associateName = document.getElementById('associate-name').value;
-            if (position === "" || associateName === "") {
-                alert("Please enter both the position and associate name.");
-                return;
-            }
-
-            var associate = position + " - " + associateName;
-
-            // Add associate to the associates array
-            associates.push(associate);
-
-            // Update the associates dropdown menu
-            updateAssociatesDropdown();
-        }
-
-        function updateAssociatesDropdown() {
-            var associateSelect = document.getElementById('associate');
-            associateSelect.innerHTML = '';
-
-            // Add all associates to the dropdown menu
-            for (var i = 0; i < associates.length; i++) {
-                var option = document.createElement('option');
-                option.text = associates[i];
-                associateSelect.add(option);
-            }
-        }
-
-        function downloadAssociatesData() {
-            // Convert associates array to JSON
-            var dataStr = JSON.stringify(associates);
-            var dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
-
-            // Create a download link and click it
-            var exportFileDefaultName = 'associates_data.json';
-            var linkElement = document.createElement('a');
-            linkElement.setAttribute('href', dataUri);
-            linkElement.setAttribute('download', exportFileDefaultName);
-            linkElement.click();
-        }
-
-        function uploadAssociatesData(event) {
-            // Read the file using FileReader
-            var file = event.target.files[0];
-            var reader = new FileReader();
-            reader.onload = function(event) {
-                // Parse the JSON data
-                var data = JSON.parse(event.target.result);
-
-                // Update the associates array and dropdown menu
-                associates = data;
-                updateAssociatesDropdown();
-            };
-            reader.readAsText(file);
-        }
-    </script>
-</head>
+<title>Associate Schedule</title>
+<style>
+    /* Add your CSS here */
+</style>
+- **External Script Imports**
 <body>
     <h1>Associate Schedule</h1>
-    <div>
-        <label for="position">Position:</label>
-        <input type="text" id="position">
-    </div>
     <div>
         <label for="associate-name">Associate Name:</label>
         <input type="text" id="associate-name">
     </div>
-    <button onclick="addAssociate()">Add Associate</button>
     <div>
-        <label for="associate">Select Associate:</label>
-        <select id="associate">
-            <!-- Associates will be dynamically populated here -->
-        </select>
+        <label for="is-minor">Is Minor?</label>
+        <input type="checkbox" id="is-minor">
     </div>
     <div>
-        <button onclick="downloadAssociatesData()">Download Data</button>
-        <input type="file" id="upload" onchange="uploadAssociatesData(event)">
+        <label for="shift-start">Shift Start Time:</label>
+        <input type="time" id="shift-start">
     </div>
-    <div id="chart"></div>
+    <div>
+        <label for="shift-end">Shift End Time:</label>
+        <input type="time" id="shift-end">
+    </div>
+    <button onclick="addShift()">Add Shift</button>
+    <div id="timeline"></div>
+
+<script type="text/javascript">
+    // Array to hold all the shift data
+    var shifts = [];
+
+    // Initialize timeline
+    var container = document.getElementById('timeline');
+    var items = new vis.DataSet();
+    var timeline = new vis.Timeline(container, items);
+</script>
+
+<script type="text/javascript">
+    function addShift() {
+        var name = document.getElementById('associate-name').value;
+        var isMinor = document.getElementById('is-minor').checked;
+        var start = new Date(`1970-01-01T${document.getElementById('shift-start').value}Z`);
+        var end = new Date(`1970-01-01T${document.getElementById('shift-end').value}Z`);
+
+        if (name === '' || isNaN(start.getTime()) || isNaN(end.getTime())) {
+            alert('Please enter the associate name and shift times.');
+            return;
+        }
+
+        var shift = generateShift(name, start, end, isMinor);
+        shifts.push(shift);
+
+        items.add(shiftToTimelineItem(shift));
+
+        timeline.fit();  // Adjust the view to show all items
+    }
+</script>
+
+<script type="text/javascript">
+    function generateShift(name, start, end, isMinor) {
+        // ... paste the generateShift function from the previous response here ...
+    }
+</script>
+
+<script type="text/javascript">
+    function shiftToTimelineItem(shift) {
+        var items = [
+            {id: shift.id, content: `${shift.name} (Shift)`, start: shift.start, end: shift.end}
+        ];
+
+        shift.breaks.forEach((breakTime, i) => {
+            items.push({id: `${shift.id}-break-${i+1}`, content: `${shift.name} (Break ${i+1})`, start: breakTime.start, end: breakTime.end});
+        });
+
+        if (shift.lunchStart && shift.lunchEnd) {
+            items.push({id: `${shift.id}-lunch`, content: `${shift.name} (Lunch)`, start: shift.lunchStart, end: shift.lunchEnd});
+        }
+
+        return items;
+    }
+
+</script>
 </body>
 </html>
+
+<script type="text/javascript">
+    // Other global variables and function definitions...
+
+    var options = {
+        editable: {
+            updateTime: true, // Allow moving items
+            updateGroup: true, // Allow moving items from one group to another
+            remove: true, // Allow items to be deleted
+        },
+        onMoving: function (item, callback) {
+            // Prevent items from being moved to overlap other items or outside the shift time
+            var otherItems = items.get({filter: i => i.id !== item.id});
+            var shift = shifts.find(s => s.id === item.id || item.id.startsWith(`${s.id}-`));
+            item.start = Math.max(item.start, shift.start);
+            item.end = Math.min(item.end, shift.end);
+            otherItems.forEach(i => {
+                if (item.start < i.end && item.end > i.start) {
+                    if (Math.abs(item.start - i.end) < Math.abs(item.end - i.start)) {
+                        item.start = i.end;
+                    } else {
+                        item.end = i.start;
+                    }
+                }
+            });
+            callback(item);
+        },
+    };
+    var timeline = new vis.Timeline(container, items, options);
+</script>
+
+<script type="text/javascript">
+    // Other global variables and function definitions...
+
+    timeline.on('move', function (properties) {
+        // Save the new item positions
+        // The properties object contains the ids of the moved items and their old and new dates
+        console.log(properties);
+    });
+</script>
